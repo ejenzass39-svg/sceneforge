@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sceneforge</title>
+<style>
+:root{color-scheme:dark;--bg:#0c0d12;--panel:#14161d;--p2:#1a1d26;--line:#262a36;--tx:#eceae4;--mut:#8b8f9c;--gold:#d8b46a;--gold2:#b8924a;--ink:#17130a}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+body{padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0)}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+header{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line);background:#10121a;position:sticky;top:0;z-index:5}
+.brand{font:600 21px Georgia,"Times New Roman",serif;display:flex;align-items:center;gap:9px}
+.logo{width:26px;height:26px;border-radius:8px;background:conic-gradient(from 210deg,var(--gold),#f3dfae,var(--gold2),var(--gold));display:grid;place-items:center;color:var(--ink);font-size:13px}
+.btn{border:1px solid var(--line);background:var(--p2);padding:9px 15px;border-radius:10px;cursor:pointer;font-weight:600}
+.btn:disabled{opacity:.6}
+.gold{background:linear-gradient(135deg,#ecd397,var(--gold) 45%,var(--gold2));color:var(--ink);border:0}
+.app{display:grid;grid-template-columns:390px minmax(0,1fr) 280px;min-height:calc(100vh - 56px)}
+.col{padding:16px}
+.left{background:var(--panel);border-right:1px solid var(--line)}
+.right{background:var(--panel);border-left:1px solid var(--line)}
+h2{font-size:12.5px;font-weight:700;margin:0 0 10px;color:var(--mut)}
+.sc{background:var(--p2);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:12px}
+.sc.sel{border-color:var(--gold)}
+.sh{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.sn{font:600 17px Georgia,serif}
+.x{background:none;border:0;color:var(--mut);font-size:19px;cursor:pointer;padding:2px 8px;border-radius:8px}
+.drop{display:flex;align-items:center;gap:10px;border:1px dashed #3a4052;border-radius:11px;padding:8px;margin-bottom:8px;cursor:pointer;min-height:56px;background:#0d0f14}
+.drop:hover{border-color:var(--gold)}
+.drop input{display:none}
+.th{width:64px;height:44px;border-radius:7px;background:#07080b;overflow:hidden;flex:none;display:grid;place-items:center;font-size:18px;color:var(--mut);position:relative}
+.th video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.dt{min-width:0;font-size:12.5px}
+.dt b{display:block;font-size:13px}
+.dt span{color:var(--mut);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row{display:flex;gap:8px;align-items:center}
+label.l{font-size:12px;color:var(--mut);font-weight:600}
+input[type=number],select{width:100%;background:#0d0f14;border:1px solid var(--line);border-radius:9px;padding:8px 10px}
+input[type=range]{width:100%;accent-color:var(--gold)}
+.chip{display:inline-block;font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:99px;background:#241f12;color:var(--gold);margin-top:6px}
+.chip.ok{background:#12261b;color:#7fd6a0}
+.add{width:100%;border:1px dashed #3a4052;background:none;padding:13px;border-radius:14px;color:var(--gold);font-weight:700;cursor:pointer}
+.center{display:flex;flex-direction:column;min-width:0;background:radial-gradient(900px 480px at 50% -10%,#1a1c26,var(--bg))}
+.sw{flex:1;display:grid;place-items:center;padding:20px;min-height:340px}
+.stage{position:relative;background:#050608;border-radius:16px;overflow:hidden;border:1px solid #2c3140;box-shadow:0 0 0 8px #101218}
+.stage.h{aspect-ratio:16/9;width:min(100%,720px)}
+.stage.v{aspect-ratio:9/16;height:420px;max-height:62vh}
+.stage video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.empty{position:absolute;inset:0;display:grid;place-items:center;text-align:center;color:#5b6070;padding:16px;background:repeating-linear-gradient(135deg,#0a0b0f 0 14px,#0d0e13 14px 28px)}
+.tag{position:absolute;top:10px;left:10px;font-size:11px;font-weight:700;background:rgba(8,9,12,.7);padding:3px 9px;border-radius:99px}
+.pb{position:absolute;left:0;bottom:0;height:3px;background:var(--gold);width:0}
+.tp{display:flex;justify-content:center;align-items:center;gap:14px;padding-bottom:8px}
+.play{width:46px;height:46px;border-radius:50%;padding:0}
+.time{color:var(--mut);font-variant-numeric:tabular-nums;min-width:110px;text-align:center}
+.tl{padding:12px 16px 18px;border-top:1px solid var(--line);background:#0f1117}
+.tt{display:flex;justify-content:space-between;color:var(--mut);font-size:12.5px;font-weight:600;margin-bottom:8px}
+.track{display:flex;gap:3px;height:50px;overflow-x:auto}
+.blk{flex:none;min-width:46px;border-radius:9px;background:#252a39;border:1px solid #333a4c;padding:6px 9px;cursor:pointer;font-size:12px}
+.blk b{display:block;font:600 13px Georgia,serif}
+.blk.sel{border-color:var(--gold);background:#3a3320}
+.seg{display:grid;grid-template-columns:1fr 1fr;background:#0d0f14;border:1px solid var(--line);border-radius:12px;padding:4px;gap:4px}
+.seg button{border:0;background:none;padding:9px 4px;border-radius:9px;cursor:pointer;font-weight:700;color:var(--mut);font-size:12px;display:flex;flex-direction:column;align-items:center;gap:6px}
+.seg button.on{background:var(--p2);color:var(--gold);box-shadow:0 0 0 1px #3a3220}
+.ico{border:2px solid currentColor;border-radius:3px}
+.grp{margin-bottom:18px}
+.grp label.l{display:block;margin:10px 0 4px}
+.note{color:var(--mut);font-size:12px;margin:8px 0 0}
+.toast{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom,0));transform:translate(-50%,30px);opacity:0;background:#f1e3bd;color:#241b08;padding:10px 16px;border-radius:12px;font-weight:700;transition:.3s;z-index:9;max-width:90vw;text-align:center}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+@media(max-width:1000px){.app{grid-template-columns:1fr}.center{order:-1}.left,.right{border:0}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><span class="logo">✦</span>Sceneforge</div>
+  <div class="row"><button class="btn" id="auto">Auto-edit</button><button class="btn gold" id="exp">Ekspor</button></div>
+</header>
+<div class="app">
+<aside class="col left">
+  <div class="row" style="justify-content:space-between;margin-bottom:12px"><h2 style="margin:0">Scene (<span id="cnt">0</span>)</h2>
+    <div class="row"><input type="number" id="gen" min="1" max="30" value="4" style="width:60px" aria-label="Jumlah scene"><button class="btn" id="genb" style="padding:7px 12px">Buat</button></div></div>
+  <div id="list"></div>
+  <button class="add" id="add">+ Tambah scene</button>
+</aside>
+<main class="center">
+  <div class="sw"><div class="stage h" id="stage">
+    <div class="empty" id="empty">Unggah klip pada scene<br>untuk melihat pratinjau</div>
+    <video id="vid" muted playsinline loop></video><div class="tag" id="tag">Scene 1</div><div class="pb" id="pb"></div></div></div>
+  <div class="tp"><button class="btn gold play" id="play" aria-label="Putar">▶</button><div class="time" id="time">0:00 / 0:00</div></div>
+  <div class="tl"><div class="tt"><span>Timeline</span><span id="tot"></span></div><div class="track" id="track"></div></div>
+</main>
+<aside class="col right">
+  <div class="grp"><h2>Rasio video</h2><div class="seg" id="ratio">
+    <button class="on" data-r="h"><span class="ico" style="width:30px;height:17px"></span>Horizontal 16:9</button>
+    <button data-r="v"><span class="ico" style="width:17px;height:30px"></span>Vertikal 9:16</button></div></div>
+  <div class="grp"><h2>Jika klip lebih pendek dari audio</h2>
+    <select id="mode" aria-label="Mode klip pendek"><option value="loop">Ulangi klip</option><option value="slow">Perlambat klip</option><option value="freeze">Bekukan frame terakhir</option></select>
+    <p class="note">Jika klip lebih panjang dari audio, klip otomatis dipotong.</p></div>
+  <div class="grp"><h2>Hasil akhir</h2>
+    <label class="l" for="res">Resolusi</label><select id="res"><option value="720">720p HD (cepat)</option><option value="1080">1080p Full HD</option></select>
+    <label class="l" for="fps">Frame rate</label><select id="fps"><option>30</option><option>24</option></select>
+    <label class="l" for="emode">Mode ekspor</label><select id="emode"><option value="all">Satu video gabungan</option><option value="each">Klip terpisah per scene</option></select>
+    <p class="note">Setelah selesai, pilih CapCut dari menu bagikan untuk melanjutkan edit.</p></div>
+</aside>
+</div>
+<div class="toast" id="toast"></div>
+<script src="lib/ffmpeg.js"></script>
+<script src="lib/util.js"></script>
+<script>
+(function(){
+var S=[],sel=0,uid=0,ratio='h',tk=0,playing=false,ff=null;
+var $=function(i){return document.getElementById(i)},vid=$('vid'),aud=new Audio();
+function toast(t){var e=$('toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(function(){e.classList.remove('on')},2800)}
+function fmt(s){s=Math.round(s);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')}
+function mk(){return{id:++uid,clip:null,audio:null,cu:'',au:'',cn:'',an:'',cd:0,ad:0,man:5}}
+function dur(s){return s.audio&&s.ad?s.ad:s.man}
+function total(){return S.reduce(function(a,s){return a+dur(s)},0)}
+function r1(n){return Math.round(n*10)/10}
+function info(s){
+  if(!s.clip||!s.audio)return '';
+  var m=$('mode').value,lb={loop:'diulang',slow:'diperlambat',freeze:'frame terakhir dibekukan'};
+  if(s.cd+.05<s.ad)return '<span class="chip">Klip '+r1(s.cd)+' dtk &lt; audio '+r1(s.ad)+' dtk · '+lb[m]+'</span>';
+  if(s.cd>s.ad+.05)return '<span class="chip ok">Klip dipotong ke '+r1(s.ad)+' dtk</span>';
+  return '<span class="chip ok">Durasi klip dan audio pas</span>';
+}
+function renderList(){
+  $('cnt').textContent=S.length;
+  $('list').innerHTML=S.map(function(s,i){var au=!!s.audio;
+    return '<div class="sc'+(i===sel?' sel':'')+'" data-i="'+i+'"><div class="sh"><span class="sn">Scene '+(i+1)+'</span><button class="x" data-del="'+i+'" aria-label="Hapus scene">×</button></div>'+
+    '<label class="drop"><span class="th">'+(s.cu?'<video src="'+s.cu+'#t=0.1" muted preload="metadata"></video>':'▶')+'</span><span class="dt"><b>Klip video</b><span>'+(s.cn?s.cn+' · '+r1(s.cd)+' dtk':'Ketuk untuk memilih video')+'</span></span><input type="file" accept="video/*" data-clip="'+i+'"></label>'+
+    '<label class="drop"><span class="th">♪</span><span class="dt"><b>Audio voice over</b><span>'+(s.an?s.an+' · '+r1(s.ad)+' dtk':'MP3, WAV, M4A dari CapCut atau ElevenLabs')+'</span></span><input type="file" accept="audio/*" data-aud="'+i+'"></label>'+
+    (au?'<div class="row"><label class="l">Durasi scene: '+r1(s.ad)+' detik (mengikuti audio)</label><button class="x" data-rm="'+i+'" style="font-size:12px">Lepas audio</button></div>'
+       :'<label class="l">Durasi manual: <span data-dl="'+i+'">'+s.man+'</span> detik</label><div class="row"><input type="range" min="1" max="60" value="'+Math.min(60,s.man)+'" data-rg="'+i+'"><input type="number" min="1" max="600" value="'+s.man+'" data-nm="'+i+'" style="width:66px"></div>')+
+    '<div data-info="'+i+'">'+info(s)+'</div></div>'}).join('');
+  renderTrack();
+}
+function renderTrack(){
+  var t=total()||1,w=Math.max(600,$('track').clientWidth);
+  $('track').innerHTML=S.map(function(s,i){return '<div class="blk'+(i===sel?' sel':'')+'" data-b="'+i+'" style="width:'+Math.max(46,dur(s)/t*w)+'px"><b>S'+(i+1)+'</b>'+r1(dur(s))+' dtk</div>'}).join('');
+  $('tot').textContent='Total '+fmt(total())+' · '+S.length+' scene';$('time').textContent='0:00 / '+fmt(total());
+}
+function show(i){
+  sel=i;var s=S[i];if(!s)return;$('tag').textContent='Scene '+(i+1);
+  if(s.cu){if(vid.dataset.u!==s.cu){vid.src=s.cu;vid.dataset.u=s.cu}vid.style.display='';$('empty').style.display='none';vid.play().catch(function(){})}
+  else{vid.removeAttribute('src');vid.dataset.u='';vid.style.display='none';$('empty').style.display='';$('empty').textContent='Scene '+(i+1)+' belum memiliki klip'}
+  [].forEach.call(document.querySelectorAll('.sc'),function(e,k){e.classList.toggle('sel',k===i)});
+  [].forEach.call(document.querySelectorAll('.blk'),function(e,k){e.classList.toggle('sel',k===i)});
+}
+function meta(file,kind,cb){var m=document.createElement(kind);m.preload='metadata';m.src=URL.createObjectURL(file);m.onloadedmetadata=function(){cb(m.src,isFinite(m.duration)?m.duration:0)};m.onerror=function(){toast('File tidak bisa dibaca')}}
+$('list').addEventListener('change',function(e){
+  var d=e.target.dataset,f=e.target.files&&e.target.files[0];if(!f)return;
+  if(d.clip!=null){var i=+d.clip;meta(f,'video',function(u,du){S[i].clip=f;S[i].cu=u;S[i].cn=f.name;S[i].cd=du;renderList();show(i)})}
+  if(d.aud!=null){var j=+d.aud;meta(f,'audio',function(u,du){S[j].audio=f;S[j].au=u;S[j].an=f.name;S[j].ad=du;renderList();show(j);toast('Durasi scene '+(j+1)+' = '+r1(du)+' detik')})}
+});
+$('list').addEventListener('input',function(e){
+  var d=e.target.dataset;
+  if(d.rg!=null){var i=+d.rg;S[i].man=+e.target.value;document.querySelector('[data-nm="'+i+'"]').value=S[i].man;document.querySelector('[data-dl="'+i+'"]').textContent=S[i].man;renderTrack()}
+  if(d.nm!=null){var k=+d.nm;S[k].man=Math.max(1,+e.target.value||1);document.querySelector('[data-rg="'+k+'"]').value=Math.min(60,S[k].man);document.querySelector('[data-dl="'+k+'"]').textContent=S[k].man;renderTrack()}
+});
+$('list').addEventListener('click',function(e){
+  var d=e.target.dataset;
+  if(d.del!=null){S.splice(+d.del,1);sel=Math.max(0,Math.min(sel,S.length-1));renderList();show(sel);return}
+  if(d.rm!=null){var s=S[+d.rm];s.audio=null;s.au='';s.an='';s.ad=0;renderList();return}
+  var sc=e.target.closest('.sc');if(sc&&!e.target.closest('.drop')&&e.target.tagName!=='INPUT')show(+sc.dataset.i);
+});
+$('track').addEventListener('click',function(e){var b=e.target.closest('.blk');if(b)show(+b.dataset.b)});
+$('add').onclick=function(){S.push(mk());renderList();show(S.length-1)};
+$('genb').onclick=function(){var n=Math.max(1,Math.min(30,+$('gen').value||1));S=[];for(var i=0;i<n;i++)S.push(mk());sel=0;renderList();show(0)};
+$('mode').onchange=renderList;
+$('ratio').onclick=function(e){var b=e.target.closest('button');if(!b)return;ratio=b.dataset.r;[].forEach.call(this.children,function(c){c.classList.toggle('on',c===b)});$('stage').className='stage '+ratio};
+$('auto').onclick=function(){
+  var n=0;S.forEach(function(s){if(s.audio&&s.ad&&s.clip){n++}});
+  renderList();toast(n?'Auto-edit: '+n+' scene disesuaikan dengan durasi audio':'Unggah audio dan klip agar durasi bisa disesuaikan otomatis');
+};
+
+/* pratinjau */
+function wait(ms,t,cb){return new Promise(function(r){var st=performance.now();(function f(){if(t!==tk)return r(false);var el=performance.now()-st;cb(el);if(el>=ms)return r(true);requestAnimationFrame(f)})()})}
+async function play(){
+  if(playing){stop();return}if(!S.length){toast('Buat scene dulu');return}
+  playing=true;$('play').textContent='❚❚';var t=++tk,done=0;
+  for(var i=0;i<S.length;i++){
+    var s=S[i];show(i);aud.pause();if(s.au){aud.src=s.au;aud.currentTime=0;aud.play().catch(function(){})}
+    var D=dur(s),ok=await wait(D*1000,t,function(el){$('pb').style.width=Math.min(100,el/(D*10))+'%';$('time').textContent=fmt(done+el/1000)+' / '+fmt(total())});
+    if(!ok)return;done+=D;
+  }
+  stop();
+}
+function stop(){tk++;playing=false;$('play').textContent='▶';$('pb').style.width='0';aud.pause();vid.pause()}
+$('play').onclick=play;window.addEventListener('resize',renderTrack);
+
+/* ekspor (ffmpeg.wasm) */
+function ext(n){var m=/\.([a-z0-9]+)$/i.exec(n);return m?m[1].toLowerCase():'mp4'}
+function b64(u8){var s='',c=0x8000;for(var i=0;i<u8.length;i+=c)s+=String.fromCharCode.apply(null,u8.subarray(i,i+c));return btoa(s)}
+async function save(files){
+  var P=window.Capacitor&&Capacitor.Plugins,uris=[];
+  if(P&&P.Filesystem&&P.Share){
+    for(var f of files){var r=await P.Filesystem.writeFile({path:f.name,data:b64(f.data),directory:'CACHE'});uris.push(r.uri)}
+    await P.Share.share({title:'Sceneforge',files:uris,dialogTitle:'Kirim ke CapCut atau simpan'});
+  }else{files.forEach(function(f){var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([f.data],{type:'video/mp4'}));a.download=f.name;a.click()})}
+}
+async function exportAll(){
+  var b=$('exp');
+  if(!window.FFmpegWASM){toast('Mesin ekspor hanya tersedia di aplikasi APK, bukan di pratinjau web');return}
+  if(!S.length||S.some(function(s){return !s.clip&&!s.audio})){toast('Setiap scene perlu klip atau audio');return}
+  b.disabled=true;
+  try{
+    if(!ff){b.textContent='Memuat mesin…';ff=new FFmpegWASM.FFmpeg();
+      await ff.load({coreURL:new URL('lib/ffmpeg-core.js',location.href).href,wasmURL:new URL('lib/ffmpeg-core.wasm',location.href).href})}
+    var v=+$('res').value,W=ratio==='h'?Math.round(v*16/9/2)*2:v,H=ratio==='h'?v:Math.round(v*16/9/2)*2,fps=$('fps').value,m=$('mode').value,out=[];
+    var cur=0;ff.on('progress',function(p){b.textContent='Scene '+(cur+1)+'/'+S.length+' · '+Math.round(Math.min(1,p.progress)*100)+'%'});
+    for(var i=0;i<S.length;i++){
+      cur=i;var s=S[i],D=dur(s),Ds=D.toFixed(3),a=[],vf=[];
+      if(s.clip){var cn='v'+i+'.'+ext(s.cn);await ff.writeFile(cn,new Uint8Array(await s.clip.arrayBuffer()));
+        var shortc=s.cd>0&&s.cd+.05<D;
+        if(shortc&&m==='loop')a.push('-stream_loop','-1');
+        a.push('-i',cn);
+        if(shortc&&m==='slow')vf.push('setpts='+(D/s.cd).toFixed(4)+'*PTS');
+        vf.push('scale='+W+':'+H+':force_original_aspect_ratio=increase','crop='+W+':'+H,'fps='+fps,'setsar=1');
+        if(shortc&&m==='freeze')vf.push('tpad=stop_mode=clone:stop_duration='+Ds);
+      }else a.push('-f','lavfi','-i','color=c=black:s='+W+'x'+H+':r='+fps);
+      if(s.audio){var an='a'+i+'.'+ext(s.an);await ff.writeFile(an,new Uint8Array(await s.audio.arrayBuffer()));a.push('-i',an)}
+      else a.push('-f','lavfi','-i','anullsrc=r=44100:cl=stereo');
+      a.push('-t',Ds);if(vf.length)a.push('-vf',vf.join(','));
+      a.push('-map','0:v:0','-map','1:a:0','-c:v','libx264','-preset','ultrafast','-crf','27','-pix_fmt','yuv420p','-c:a','aac','-b:a','128k','-ar','44100','-ac','2','-movflags','+faststart','o'+i+'.mp4');
+      var rc=await ff.exec(a);if(rc!==0)throw new Error('Gagal merender scene '+(i+1));
+      if(s.clip)await ff.deleteFile(cn);if(s.audio)await ff.deleteFile(an);
+    }
+    if($('emode').value==='each'){for(var k=0;k<S.length;k++)out.push({name:'scene'+(k+1)+'.mp4',data:await ff.readFile('o'+k+'.mp4')})}
+    else{b.textContent='Menggabungkan…';
+      await ff.writeFile('list.txt',S.map(function(_,k){return "file 'o"+k+".mp4'"}).join('\n'));
+      var r2=await ff.exec(['-f','concat','-safe','0','-i','list.txt','-c','copy','final.mp4']);if(r2!==0)throw new Error('Gagal menggabungkan');
+      out.push({name:'sceneforge_'+Date.now()+'.mp4',data:await ff.readFile('final.mp4')})}
+    await save(out);toast('Ekspor selesai');
+  }catch(err){console.error(err);toast(err.message||'Ekspor gagal')}
+  b.disabled=false;b.textContent='Ekspor';
+}
+$('exp').onclick=exportAll;
+
+S=[mk(),mk(),mk()];renderList();show(0);
+})();
+</script>
+</body>
+</html>

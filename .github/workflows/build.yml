@@ -1,0 +1,31 @@
+name: Build APK
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - run: npm install
+      - name: Salin mesin ffmpeg ke www/lib
+        run: |
+          mkdir -p www/lib
+          cp -r node_modules/@ffmpeg/ffmpeg/dist/umd/* www/lib/
+          cp node_modules/@ffmpeg/util/dist/umd/index.js www/lib/util.js
+          cp node_modules/@ffmpeg/core/dist/umd/ffmpeg-core.js node_modules/@ffmpeg/core/dist/umd/ffmpeg-core.wasm www/lib/
+      - run: npx cap add android
+      - run: npx cap sync android
+      - run: cd android && chmod +x gradlew && ./gradlew assembleDebug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sceneforge-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk

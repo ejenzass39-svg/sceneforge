@@ -25,6 +25,12 @@ jobs:
       - run: npx cap add android
       - name: Buat ikon aplikasi
         run: npx --yes @capacitor/assets@3 generate --android --iconBackgroundColor '#0c0d12' --iconBackgroundColorDark '#0c0d12' || echo 'ikon dilewati'
+      - name: Pengaman ikon
+        run: |
+          if ! ls android/app/src/main/res/mipmap-*/ic_launcher_background* >/dev/null 2>&1; then
+            echo 'latar ikon tidak ada, pakai ikon biasa'
+            rm -rf android/app/src/main/res/mipmap-anydpi-v26
+          fi
       - run: npx cap sync android
       - run: cd android && chmod +x gradlew && ./gradlew assembleDebug
       - uses: actions/upload-artifact@v4

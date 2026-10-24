@@ -66,7 +66,7 @@ input[type=range]{width:100%;accent-color:var(--gold)}
 .ico{border:2px solid currentColor;border-radius:3px}
 .grp{margin-bottom:18px}
 .grp label.l{display:block;margin:10px 0 4px}
-.note{color:var(--mut);font-size:12px;margin:8px 0 0}.sw2{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:6px 0}.sw2 input{accent-color:var(--gold);width:18px;height:18px}.sub2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:4px 0}.stage canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.lg{display:block;filter:drop-shadow(0 4px 10px rgba(216,180,106,.35))}
+.note{color:var(--mut);font-size:12px;margin:8px 0 0}.sw2{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:6px 0}.sw2 input{accent-color:var(--gold);width:18px;height:18px}.sub2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:4px 0}.stage canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.lg{display:block;filter:drop-shadow(0 4px 10px rgba(216,180,106,.35))}.stage.fit video,.stage.fit canvas{object-fit:contain}
 .sheet{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;justify-content:center;z-index:20}.sheet[hidden]{display:none}
 .sbox{background:#14161d;border:1px solid var(--line);border-radius:20px 20px 0 0;width:min(560px,100%);max-height:84vh;overflow:auto;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px))}
 .tabs{display:flex;gap:6px;overflow-x:auto;margin:10px 0}.tabs button{border:1px solid var(--line);background:var(--p2);border-radius:99px;padding:6px 14px;font-weight:600;color:var(--mut);cursor:pointer;white-space:nowrap}.tabs button.on{color:var(--ink);background:var(--gold);border-color:var(--gold)}
@@ -115,10 +115,11 @@ input[type=range]{width:100%;accent-color:var(--gold)}
     <p class="note">Bisa diganti per scene. Mode klip terpisah tidak memakai efek.</p></div>
   <div class="grp"><h2>Warna video</h2><select id="look" aria-label="Warna video"></select></div>
   <div class="grp"><h2>Hasil akhir</h2>
-    <label class="l" for="res">Resolusi</label><select id="res"><option value="720">720p HD (cepat)</option><option value="1080">1080p Full HD</option></select>
-    <label class="l" for="fps">Frame rate</label><select id="fps"><option>30</option><option>24</option></select>
+    <label class="l" for="res">Resolusi</label><select id="res"><option value="480">480p (tercepat)</option><option value="540" selected>540p (cepat)</option><option value="720">720p HD</option><option value="1080">1080p Full HD</option></select>
+    <label class="l" for="fitm">Bingkai video</label><select id="fitm"><option value="fit">Pas (tidak dipotong)</option><option value="fill">Isi layar (dipotong/zoom)</option></select>
+    <label class="l" for="fps">Frame rate</label><select id="fps"><option>24</option><option>30</option></select>
     <label class="l" for="emode">Mode ekspor</label><select id="emode"><option value="all">Satu video gabungan</option><option value="each">Klip terpisah per scene</option></select>
-    <p class="note">Setelah selesai, pilih CapCut dari menu bagikan untuk melanjutkan edit.</p></div>
+    <p class="note">Setelah selesai, pilih CapCut dari menu bagikan. Ekspor tercepat: tanpa efek perpindahan (Potong), 480p atau 540p.</p></div>
 </aside>
 </div>
 <div class="sheet" id="sheet" hidden><div class="sbox" role="dialog" aria-label="Efek perpindahan">
@@ -199,7 +200,7 @@ $('track').addEventListener('click',function(e){var t=e.target.closest('.tb');if
 $('add').onclick=function(){S.push(mk());renderList();show(S.length-1)};
 $('genb').onclick=function(){var n=Math.max(1,Math.min(30,+$('gen').value||1));S=[];for(var i=0;i<n;i++)S.push(mk());sel=0;renderList();show(0)};
 $('mode').onchange=renderList;
-$('ratio').onclick=function(e){var b=e.target.closest('button');if(!b)return;ratio=b.dataset.r;[].forEach.call(this.children,function(c){c.classList.toggle('on',c===b)});$('stage').className='stage '+ratio};
+$('ratio').onclick=function(e){var b=e.target.closest('button');if(!b)return;ratio=b.dataset.r;[].forEach.call(this.children,function(c){c.classList.toggle('on',c===b)});applyStage()};
 $('auto').onclick=function(){
   var n=0;S.forEach(function(s){if(s.audio&&s.ad&&s.clip){n++}});
   renderList();toast(n?'Auto-edit: '+n+' scene disesuaikan dengan durasi audio':'Unggah audio dan klip agar durasi bisa disesuaikan otomatis');
@@ -226,29 +227,29 @@ function b64(u8){var s='',c=0x8000;for(var i=0;i<u8.length;i+=c)s+=String.fromCh
 async function save(files){
   var P=window.Capacitor&&Capacitor.Plugins,uris=[];
   if(P&&P.Filesystem&&P.Share){
-    for(var f of files){var r=await P.Filesystem.writeFile({path:f.name,data:b64(f.data),directory:'CACHE'});uris.push(r.uri)}
+    for(var f of files){var CH=3*1024*1024,r=null;for(var o=0;o<f.data.length;o+=CH){var part=b64(f.data.subarray(o,o+CH));if(!o)r=await P.Filesystem.writeFile({path:f.name,data:part,directory:'CACHE'});else await P.Filesystem.appendFile({path:f.name,data:part,directory:'CACHE'});$('exp').textContent='Menyimpan '+Math.min(100,Math.round((o+CH)/f.data.length*100))+'%'}uris.push(r.uri)}
     await P.Share.share({title:'Sceneforge',files:uris,dialogTitle:'Kirim ke CapCut atau simpan'});
   }else{files.forEach(function(f){var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([f.data],{type:'video/mp4'}));a.download=f.name;a.click()})}
 }
 function joinArgs(){
-  var n=S.length;if(n===1)return['-i','o0.mp4','-c','copy','final.mp4'];
+  var n=S.length;if(n===1)return['-i','o0.mp4','-c','copy','final.mp4'];if(noFx())return['-f','concat','-safe','0','-i','list.txt','-c','copy','final.mp4'];
   var a=[],f=[],vl='[0:v]',al='[0:a]',L=dur(S[0]);
   for(var i=0;i<n;i++)a.push('-i','o'+i+'.mp4');
   for(var k=1;k<n;k++){var t=tinfo(k-1),off=L-t.d;L=L+dur(S[k])-t.d;
     f.push(vl+'['+k+':v]xfade=transition='+t.t+':duration='+t.d.toFixed(3)+':offset='+off.toFixed(3)+'[v'+k+']');
     f.push(al+'['+k+':a]acrossfade=d='+t.d.toFixed(3)+'[a'+k+']');vl='[v'+k+']';al='[a'+k+']'}
-  return a.concat(['-filter_complex',f.join(';'),'-map',vl,'-map',al,'-c:v','libx264','-preset','ultrafast','-crf','27','-pix_fmt','yuv420p','-c:a','aac','-b:a','128k','-movflags','+faststart','final.mp4']);
+  return a.concat(['-filter_complex',f.join(';'),'-map',vl,'-map',al,'-c:v','libx264','-preset','ultrafast','-crf','30','-pix_fmt','yuv420p','-c:a','aac','-b:a','128k','-movflags','+faststart','final.mp4']);
 }
 async function exportAll(){
-  var b=$('exp');
+  var b=$('exp');if(busy){if(confirm('Batalkan ekspor yang sedang berjalan?')){try{ff.terminate()}catch(x){}ff=null;busy=false;b.textContent='Ekspor';toast('Ekspor dibatalkan')}return}
   if(!window.FFmpegWASM){toast('Mesin ekspor hanya tersedia di aplikasi APK, bukan di pratinjau web');return}
   if(!S.length||S.some(function(s){return !s.clip&&!s.audio})){toast('Setiap scene perlu klip atau audio');return}
-  b.disabled=true;
+  busy=true;
   try{
     if(!ff){b.textContent='Memuat mesin…';ff=new FFmpegWASM.FFmpeg();
       await ff.load({coreURL:new URL('lib/ffmpeg-core.js',location.href).href,wasmURL:new URL('lib/ffmpeg-core.wasm',location.href).href})}
     var v=+$('res').value,W=ratio==='h'?Math.round(v*16/9/2)*2:v,H=ratio==='h'?v:Math.round(v*16/9/2)*2,fps=$('fps').value,m=$('mode').value,out=[];
-    var cur=0;ff.on('progress',function(p){b.textContent='Scene '+(cur+1)+'/'+S.length+' · '+Math.round(Math.min(1,p.progress)*100)+'%'});
+    var cur=0;phase='scene';if(!ff.__pg){ff.__pg=1;ff.on('progress',function(p){var bb=$('exp');if(phase==='scene')bb.textContent='Scene '+(cur+1)+'/'+S.length+' · '+Math.round(Math.min(1,Math.max(0,p.progress||0))*100)+'%';else if(phase==='join')bb.textContent='Menggabungkan efek · '+Math.min(99,Math.max(0,Math.round((p.time||0)/1e6/Math.max(1,total())*100)))+'%'})}
     for(var i=0;i<S.length;i++){
       cur=i;var s=S[i],D=dur(s),Ds=D.toFixed(3),a=[],vf=[];
       var ov=+$('ov').value/100,vv=+$('vv').value/100,uo=!!(s.clip&&s.orig&&ov>0),AFN='[1:a]volume='+vv+'[a]',AF=uo?'[0:a]volume='+ov+'[o];[1:a]volume='+vv+'[v];[o][v]amix=inputs=2:duration=longest,volume=2[a]':AFN;
@@ -257,24 +258,24 @@ async function exportAll(){
         if(m==='loop')a.push('-stream_loop','-1');
         if(s.ss>0)a.push('-ss',String(s.ss));a.push('-i',cn);
         if(shortc&&m==='slow')vf.push('setpts='+(D/cl).toFixed(4)+'*PTS');
-        vf.push('scale='+W+':'+H+':force_original_aspect_ratio=increase','crop='+W+':'+H,'fps='+fps,'setsar=1');if(lk()[3])vf.push(lk()[3]);
+        if($('fitm').value==='fit')vf.push('scale='+W+':'+H+':force_original_aspect_ratio=decrease','pad='+W+':'+H+':(ow-iw)/2:(oh-ih)/2:black');else vf.push('scale='+W+':'+H+':force_original_aspect_ratio=increase','crop='+W+':'+H);vf.push('fps='+fps,'setsar=1');if(lk()[3])vf.push(lk()[3]);
         if(m==='freeze')vf.push('tpad=stop_mode=clone:stop_duration='+Ds);
       }else a.push('-f','lavfi','-i','color=c=black:s='+W+'x'+H+':r='+fps);
       if(s.audio){var an='a'+i+'.'+ext(s.an);await ff.writeFile(an,new Uint8Array(await s.audio.arrayBuffer()));a.push('-i',an)}
       else a.push('-f','lavfi','-i','anullsrc=r=44100:cl=stereo');
       a.push('-t',Ds);if(vf.length)a.push('-vf',vf.join(','));
-      a.push('-filter_complex',AF,'-map','0:v:0','-map','[a]','-c:v','libx264','-preset','ultrafast','-crf','27','-pix_fmt','yuv420p','-c:a','aac','-b:a','128k','-ar','44100','-ac','2','-movflags','+faststart','o'+i+'.mp4');
+      a.push('-filter_complex',AF,'-map','0:v:0','-map','[a]','-c:v','libx264','-preset','ultrafast','-crf','30','-pix_fmt','yuv420p','-c:a','aac','-b:a','128k','-ar','44100','-ac','2','o'+i+'.mp4');
       var rc=await ff.exec(a);if(rc!==0&&uo){a[a.indexOf('-filter_complex')+1]=AFN;rc=await ff.exec(a)}if(rc!==0)throw new Error('Gagal merender scene '+(i+1));
       if(s.clip)await ff.deleteFile(cn);if(s.audio)await ff.deleteFile(an);
     }
     if($('emode').value==='each'){for(var k=0;k<S.length;k++)out.push({name:'scene'+(k+1)+'.mp4',data:await ff.readFile('o'+k+'.mp4')})}
-    else{b.textContent='Menggabungkan…';
+    else{phase='join';b.textContent='Menggabungkan…';
       await ff.writeFile('list.txt',S.map(function(_,k){return "file 'o"+k+".mp4'"}).join('\n'));
       var r2=await ff.exec(joinArgs());if(r2!==0){r2=await ff.exec(['-f','concat','-safe','0','-i','list.txt','-c','copy','final.mp4']);if(r2===0)toast('Efek tidak didukung, video digabung tanpa efek')}if(r2!==0)throw new Error('Gagal menggabungkan');
       out.push({name:'sceneforge_'+Date.now()+'.mp4',data:await ff.readFile('final.mp4')})}
     await save(out);toast('Ekspor selesai');
   }catch(err){console.error(err);toast(err.message||'Ekspor gagal')}
-  b.disabled=false;b.textContent='Ekspor';
+  busy=false;b.textContent='Ekspor';
 }
 $('exp').onclick=exportAll;
 
@@ -313,7 +314,9 @@ $('sgrid').onclick=function(e){var b=e.target.closest('.tile');if(b){S[cs].tr=b.
 $('sclose').onclick=$('sok').onclick=function(){$('sheet').hidden=true;renderList()};
 $('sall').onclick=function(){var t=S[cs].tr==='def'?$('tr').value:S[cs].tr;S.forEach(function(s){s.tr=t});$('tr').value=t;renderList();renderSheet();toast('Efek diterapkan ke semua scene')};
 $('sd').oninput=function(){$('td').value=this.value;$('tdv').textContent=(+this.value).toFixed(1);$('sdv').textContent=(+this.value).toFixed(1);renderTrack()};
-$('tr').innerHTML=TR.map(function(o){return '<option value="'+o[0]+'">'+o[1]+'</option>'}).join('');$('tr').value='fade';
+$('tr').innerHTML=TR.map(function(o){return '<option value="'+o[0]+'">'+o[1]+'</option>'}).join('');$('tr').value='none';var busy=false,phase='';
+function applyStage(){$('stage').className='stage '+ratio+($('fitm').value==='fit'?' fit':'')}$('fitm').onchange=applyStage;applyStage();
+function noFx(){for(var i=0;i<S.length-1;i++){var t=S[i].tr==='def'?$('tr').value:S[i].tr;if(t!=='none')return false}return true}
 $('look').innerHTML=LK.map(function(o){return '<option value="'+o[0]+'">'+o[1]+'</option>'}).join('');
 $('ov').oninput=function(){$('ovv').textContent=this.value+'%';vid.volume=this.value/100};
 $('vv').oninput=function(){$('vvv').textContent=this.value+'%';aud.volume=Math.min(1,this.value/100)};
